@@ -2,13 +2,17 @@ package com.latelier.tenisu.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.latelier.tenisu.dto.Statistics;
+import com.latelier.tenisu.dto.CreatePlayerDto;
+import com.latelier.tenisu.dto.StatisticsDto;
 import com.latelier.tenisu.exception.NoContentException;
 import com.latelier.tenisu.model.Player;
 import com.latelier.tenisu.service.PlayerService;
@@ -56,9 +60,16 @@ public class PlayerController {
      * @return a ResponseEntity containing the statistics of players.
      */
     @GetMapping("/statistics")
-    public ResponseEntity<Statistics> getPlayerStatistics() {
+    public ResponseEntity<StatisticsDto> getPlayerStatistics() {
         List<Player> players = playerService.getPlayersSortedByRankBestToWorst();
-        Statistics statistics = playerService.buildStatistics(players);
+        StatisticsDto statistics = playerService.buildStatistics(players);
         return ResponseEntity.ok(statistics);
     }
+
+    @PostMapping()
+    public ResponseEntity<Player> addNewPlayer(@RequestBody CreatePlayerDto dto) {
+        Player newPlayer = playerService.savePlayer(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newPlayer);
+    }
+
 }

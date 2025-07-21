@@ -19,18 +19,24 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
 
-import com.latelier.tenisu.dto.Statistics;
+import com.latelier.tenisu.dto.CreatePlayerDto;
+import com.latelier.tenisu.dto.StatisticsDto;
+import com.latelier.tenisu.exception.ExistingPlayerException;
 import com.latelier.tenisu.exception.PlayerNotFoundException;
 import com.latelier.tenisu.model.Country;
 import com.latelier.tenisu.model.Player;
 import com.latelier.tenisu.model.PlayerData;
 import com.latelier.tenisu.repository.PlayerRepository;
+import com.latelier.tenisu.utils.PlayerMapper;
 
 @ExtendWith(MockitoExtension.class)
 class PlayerServiceTest {
 
     @Mock
     private PlayerRepository playerRepository;
+
+    @Mock
+    private PlayerMapper mapper;
 
     @InjectMocks
     private PlayerService playerService;
@@ -212,7 +218,7 @@ class PlayerServiceTest {
         List<Player> players = List.of(player1, player2, player3);
 
         // When
-        Statistics statistics = playerService.buildStatistics(players);
+        StatisticsDto statistics = playerService.buildStatistics(players);
 
         // Then
         assertNotNull(statistics);
@@ -228,13 +234,85 @@ class PlayerServiceTest {
         List<Player> players = List.of();
 
         // When
-        Statistics statistics = playerService.buildStatistics(players);
+        StatisticsDto statistics = playerService.buildStatistics(players);
 
         // Then
         assertNotNull(statistics);
         assertEquals(new Country("Unknown", "XX"), statistics.country());
         assertEquals(0.0, statistics.averageIMC());
         assertEquals(0.0, statistics.medianHeight());
+    }
+
+    @Test
+    void savePlayer_shouldSavePlayer_whenValidDto() {
+        // Given
+        CreatePlayerDto dto = new CreatePlayerDto();
+        dto.setFirstname("Roger");
+        dto.setLastname("Federer");
+        dto.setShortname("RF");
+        dto.setSex("M");
+        dto.setCountry(new Country("picture-country-roger", "CH"));
+        dto.setPicture("picture-roger");
+
+        PlayerData data = new PlayerData();
+        data.setRank(1);
+        data.setPoints(10000);
+        data.setWeight(80000); // 80 kg
+        data.setHeight(185); // 1.85 m
+        data.setAge(40);
+        data.setLast(new int[] { 1, 0, 1 }); // 2 wins, 1 loss
+        dto.setData(data);
+
+        when(playerRepository.existsByFirstnameAndLastname(dto.getFirstname(), dto.getLastname())).thenReturn(false);
+        when(playerRepository.save(any(Player.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mapper.toPlayer(dto)).thenCallRealMethod();
+
+        // When
+        Player savedPlayer = playerService.savePlayer(dto);
+
+        // Then
+        assertNotNull(savedPlayer);
+        verify(playerRepository).save(any(Player.class));
+        verify(mapper).toPlayer(dto);
+    }
+
+    @Test
+    void savePlayer_shouldThrowIllegalArgumentException_whenDtoIsNull() {
+        // Given
+        CreatePlayerDto dto = null;
+
+        // When & Then
+        Assertions.assertThatThrownBy(() -> playerService.savePlayer(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Player data cannot be null or empty");
+    }
+
+    @Test
+    void savePlayer_shouldThrowIllegalArgumentException_whenFirstnameOrLastnameIsNull() {
+        // Given
+        CreatePlayerDto dto = new CreatePlayerDto();
+        dto.setFirstname(null); // Invalid firstname
+        dto.setLastname("Nadal");
+
+        // When & Then
+        Assertions.assertThatThrownBy(() -> playerService.savePlayer(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Player data cannot be null or empty");
+    }
+
+    @Test
+    void savePlayer_shouldThrowExistingPlayerException_whenPlayerAlreadyExists() {
+        // Given
+        CreatePlayerDto dto = new CreatePlayerDto();
+        dto.setFirstname("Roger");
+        dto.setLastname("Federer");
+
+        when(playerRepository.existsByFirstnameAndLastname(dto.getFirstname(), dto.getLastname())).thenReturn(true);
+
+        // When & Then
+        Assertions.assertThatThrownBy(() -> playerService.savePlayer(dto))
+                .isInstanceOf(ExistingPlayerException.class)
+                .hasMessage("Player with the same firstname and lastname already exists");
     }
 
     private Player buildPlayer(long id, String firstname, String lastname, int rank) {

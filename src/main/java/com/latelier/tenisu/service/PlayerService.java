@@ -8,11 +8,14 @@ import java.util.Map.Entry;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.latelier.tenisu.dto.Statistics;
+import com.latelier.tenisu.dto.CreatePlayerDto;
+import com.latelier.tenisu.dto.StatisticsDto;
+import com.latelier.tenisu.exception.ExistingPlayerException;
 import com.latelier.tenisu.exception.PlayerNotFoundException;
 import com.latelier.tenisu.model.Country;
 import com.latelier.tenisu.model.Player;
 import com.latelier.tenisu.repository.PlayerRepository;
+import com.latelier.tenisu.utils.PlayerMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 public class PlayerService {
 
     private final PlayerRepository playerRepository;
+
+    private final PlayerMapper mapper;
 
     /**
      * retourner la liste des joueurs classés du meilleur au moins bon
@@ -88,11 +93,31 @@ public class PlayerService {
      * @param players
      * @return
      */
-    public Statistics buildStatistics(List<Player> players) {
+    public StatisticsDto buildStatistics(List<Player> players) {
         Country country = getCountryWithHighestWinRatio(players);
         double averageIMC = getAverageIMC(players);
         double medianHeight = getMedianHeight(players);
-        return new Statistics(country, averageIMC, medianHeight);
+        return new StatisticsDto(country, averageIMC, medianHeight);
+    }
+
+    /**
+     * Enregistrer un nouveau joueur
+     * 
+     * @param dto
+     * @return Player
+     */
+    public Player savePlayer(CreatePlayerDto dto) {
+        // Validate the CreatePlayerDto
+        if (dto == null || dto.getFirstname() == null || dto.getLastname() == null) {
+            throw new IllegalArgumentException("Player data cannot be null or empty");
+        }
+
+        // Check if a player with the same firstname and lastname already exists
+        if (playerRepository.existsByFirstnameAndLastname(dto.getFirstname(), dto.getLastname())) {
+            throw new ExistingPlayerException("Player with the same firstname and lastname already exists");
+        }
+
+        return playerRepository.save(mapper.toPlayer(dto));
     }
 
     private double getImc(Player player) {

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.latelier.tenisu.dto.ErrorMessage;
+import com.latelier.tenisu.exception.ExistingPlayerException;
 import com.latelier.tenisu.exception.NoContentException;
 import com.latelier.tenisu.exception.PlayerNotFoundException;
 
@@ -24,6 +25,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorMessage(ex.getMessage(), notFound.value()), notFound);
     }
 
+    @ExceptionHandler(ExistingPlayerException.class)
+    public ResponseEntity<ErrorMessage> handleExistingPlayerException(ExistingPlayerException ex) {
+        HttpStatus conflict = HttpStatus.CONFLICT;
+        return new ResponseEntity<>(new ErrorMessage(ex.getMessage(), conflict.value()), conflict);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorMessage> handleIllegalArgumentException(IllegalArgumentException ex) {
+        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        return new ResponseEntity<>(new ErrorMessage(ex.getMessage(), badRequest.value()), badRequest);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMessage> handleGenericException(Exception ex) {
         HttpStatus internalServerError = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -31,5 +44,4 @@ public class GlobalExceptionHandler {
                 new ErrorMessage("An unexpected error occurred: " + ex.getMessage(), internalServerError.value()),
                 internalServerError);
     }
-
 }

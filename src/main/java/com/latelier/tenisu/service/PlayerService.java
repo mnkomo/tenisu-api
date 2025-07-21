@@ -23,5 +23,14 @@ public class PlayerService {
         return playerRepository.findAll(Sort.by(Sort.Direction.ASC, "data.rank"));
     }
 
-    
+    /**
+     * retourner un joueur par son id
+     * @param id
+     * @return Player
+     * @throws PlayerNotFoundException si le joueur n'existe pas
+     */
+    public Player getPlayerById(long id) {
+        return playerRepository.findById(id)
+                .orElseThrow(() -> new PlayerNotFoundException("Player not found with id: " + id));
+    }
 }

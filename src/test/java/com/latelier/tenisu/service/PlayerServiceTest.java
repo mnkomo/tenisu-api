@@ -1,7 +1,6 @@
 package com.latelier.tenisu.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -74,7 +74,35 @@ class PlayerServiceTest {
         assertEquals(Sort.Direction.ASC, order.getDirection());
     }
 
-    
+    @Test
+    void getPlayerById_shouldReturnPlayer_whenPlayerExists() {
+        // Given
+        long playerId = 1L;
+        Player expectedPlayer = buildPlayer(playerId, "Roger", "FEDERER", 1);
+        when(playerRepository.findById(playerId)).thenReturn(Optional.of(expectedPlayer));
+
+        // When
+        Player actualPlayer = playerService.getPlayerById(playerId);
+
+        // Then
+        verify(playerRepository).findById(playerId);
+
+        Assertions.assertThat(actualPlayer)
+                .isNotNull()
+                .isEqualTo(expectedPlayer);
+    }
+
+    @Test
+    void getPlayerById_shouldThrowPlayerNotFoundException_whenPlayerDoesNotExist() {
+        // Given
+        long playerId = 999L;
+        when(playerRepository.findById(playerId)).thenReturn(Optional.empty());
+
+        // When & Then
+        Assertions.assertThatThrownBy(() -> playerService.getPlayerById(playerId))
+                .isInstanceOf(PlayerNotFoundException.class)
+                .hasMessage("Player not found with id: " + playerId);
+    }
 
     private Player buildPlayer(long id, String firstname, String lastname, int rank) {
         Player player = new Player();

@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.latelier.tenisu.controller.handler.GlobalExceptionHandler;
+import com.latelier.tenisu.exception.PlayerNotFoundException;
 import com.latelier.tenisu.model.Player;
 import com.latelier.tenisu.model.PlayerData;
 import com.latelier.tenisu.service.PlayerService;
@@ -43,12 +44,13 @@ public class PlayerControllerTest {
 
     @Test
     void getAllPlayersSortedByRank_shouldReturnPlayers_whenPlayersExist() throws Exception {
+        // Given
         Player player1 = buildPlayer(101, "Raphael", "NADAL", 1);
         Player player2 = buildPlayer(12, "Jannik", "SINNER", 2);
-
         List<Player> players = List.of(player1, player2);
         when(playerService.getPlayersSortedByRankBestToWorst()).thenReturn(players);
 
+        // When & Then
         mockMvc.perform(get("/players/sorted-by-rank"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", Matchers.is(101)))
@@ -57,12 +59,43 @@ public class PlayerControllerTest {
 
     @Test
     void getAllPlayersSortedByRank_shouldThrowNoContentException_whenPlayersExist() throws Exception {
+        // Given
         when(playerService.getPlayersSortedByRankBestToWorst()).thenReturn(Collections.emptyList());
 
+        // When & Then
         mockMvc.perform(get("/players/sorted-by-rank"))
                 .andExpect(status().isNoContent())
                 .andExpect(jsonPath("$.message", Matchers.is("No players found")))
                 .andExpect(jsonPath("$.statusCode", Matchers.is(204)));
+    }
+
+    @Test
+    void getPlayerById_shouldReturnPlayer_whenPlayerExists() throws Exception {
+        // Given
+        long playerId = 10;
+        Player player = buildPlayer(playerId, "Serena", "WILLIAMS", 3);
+        when(playerService.getPlayerById(playerId)).thenReturn(player);
+
+        // When & Then
+        mockMvc.perform(get("/players/{id}", playerId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", Matchers.is(10)))
+                .andExpect(jsonPath("$.firstname", Matchers.is("Serena")))
+                .andExpect(jsonPath("$.lastname", Matchers.is("WILLIAMS")));
+    }
+
+    @Test
+    void getPlayerById_shouldThrowPlayerNotFoundException_whenPlayerDoesNotExist() throws Exception {
+        // Given
+        long playerId = 99;
+        when(playerService.getPlayerById(playerId)).thenThrow(
+                new PlayerNotFoundException("Player not found with id: " + playerId));
+
+        // When & Then
+        mockMvc.perform(get("/players/{id}", playerId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", Matchers.is("Player not found with id: " + playerId)))
+                .andExpect(jsonPath("$.statusCode", Matchers.is(404)));
     }
 
     private Player buildPlayer(long id, String firstname, String lastname, int rank) {

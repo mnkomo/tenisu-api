@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,5 +33,17 @@ public class PlayerController {
             throw new NoContentException("No players found");
         }
         return ResponseEntity.ok(players);
+    }
+
+    /**
+     * Retrieves a player by their ID.
+     *
+     * @param id the ID of the player to retrieve.
+     * @return a ResponseEntity containing the player with the specified ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Player> getPlayerById(@PathVariable long id) {
+        Player player = playerService.getPlayerById(id);
+        return ResponseEntity.ok(player);
     }
 }

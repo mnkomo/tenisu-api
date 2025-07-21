@@ -19,7 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.latelier.tenisu.controller.handler.GlobalExceptionHandler;
+import com.latelier.tenisu.dto.Statistics;
 import com.latelier.tenisu.exception.PlayerNotFoundException;
+import com.latelier.tenisu.model.Country;
 import com.latelier.tenisu.model.Player;
 import com.latelier.tenisu.model.PlayerData;
 import com.latelier.tenisu.service.PlayerService;
@@ -98,6 +100,37 @@ public class PlayerControllerTest {
                 .andExpect(jsonPath("$.statusCode", Matchers.is(404)));
     }
 
+    @Test
+    void getPlayerStatistics_shouldReturnStatistics_whenPlayersExist() throws Exception {
+        // Given
+        Player player1 = buildPlayer(101, "Raphael", "NADAL", 1);
+        player1.setCountry(new Country("picture-spain", "ES"));
+        player1.getData().setLast(new int[] { 1, 1, 1, 0 }); // 3 wins, 1 loss
+        player1.getData().setHeight(180); // Height in cm
+        player1.getData().setWeight(70); // Weight in kg
+
+        Player player2 = buildPlayer(12, "Jannik", "SINNER", 2);
+        player2.setCountry(new Country("picture-france", "FR"));
+        player2.getData().setLast(new int[] { 1, 1, 0 }); // 2 wins, 1 loss
+        player2.getData().setHeight(170); // Height in cm
+        player2.getData().setWeight(65); // Weight in kg
+
+        List<Player> players = List.of(player1, player2);
+        when(playerService.getPlayersSortedByRankBestToWorst()).thenReturn(players);
+        when(playerService.buildStatistics(players)).thenReturn(
+                new Statistics(
+                        new Country("picture-spain", "ES"),
+                        22.37,
+                        170.0));
+
+        // When & Then
+        mockMvc.perform(get("/players/statistics"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.country.code", Matchers.is("ES"))) // Assuming Spain has the highest win ratio
+                .andExpect(jsonPath("$.averageIMC", Matchers.is(22.37)))
+                .andExpect(jsonPath("$.medianHeight", Matchers.is(170.0)));
+    }
+
     private Player buildPlayer(long id, String firstname, String lastname, int rank) {
         Player player = new Player();
         player.setId(id);
@@ -106,6 +139,7 @@ public class PlayerControllerTest {
 
         PlayerData data = new PlayerData();
         data.setRank(rank);
+        player.setData(data);
 
         return player;
     }

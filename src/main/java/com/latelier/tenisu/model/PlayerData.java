@@ -7,6 +7,7 @@ public class PlayerData {
     private int rank;
     private int points;
     private int weight;
+    private int height;
     private int age;
     private int[] last;
 }

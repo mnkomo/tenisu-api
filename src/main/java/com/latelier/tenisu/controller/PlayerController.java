@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.latelier.tenisu.dto.Statistics;
 import com.latelier.tenisu.exception.NoContentException;
 import com.latelier.tenisu.model.Player;
 import com.latelier.tenisu.service.PlayerService;
@@ -45,5 +46,19 @@ public class PlayerController {
     public ResponseEntity<Player> getPlayerById(@PathVariable long id) {
         Player player = playerService.getPlayerById(id);
         return ResponseEntity.ok(player);
+    }
+
+    /**
+     * Retrieves statistics about players, including the country with the highest
+     * win ratio,
+     * average IMC, and median height.
+     *
+     * @return a ResponseEntity containing the statistics of players.
+     */
+    @GetMapping("/statistics")
+    public ResponseEntity<Statistics> getPlayerStatistics() {
+        List<Player> players = playerService.getPlayersSortedByRankBestToWorst();
+        Statistics statistics = playerService.buildStatistics(players);
+        return ResponseEntity.ok(statistics);
     }
 }

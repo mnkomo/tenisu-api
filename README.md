@@ -63,7 +63,7 @@ Voici les points d'accès de l'API disponibles :
         ```json
         [
           {
-            "id": 17,
+            "id": "123ed1e8c0b9f2a3e4d5c6b7",
             "firstname": "Rafael",
             "lastname": "Nadal",
             "shortname": "R.NAD",
@@ -83,7 +83,7 @@ Voici les points d'accès de l'API disponibles :
             }
           },
           {
-            "id": 52,
+            "id": "65b7d1e8c0b9f2a3e4d5c612",
             "firstname": "Novak",
             "lastname": "Djokovic",
             "shortname": "N.DJO",
@@ -113,7 +113,7 @@ Voici les points d'accès de l'API disponibles :
     * Réponse (Exemple pour `id=17`) : `200 OK`
         ```json
         {
-          "id": 17,
+          "id": "65b7d1e8c0b9f2a3e4d5c6b7",
           "firstname": "Rafael",
           "lastname": "Nadal",
           "shortname": "R.NAD",

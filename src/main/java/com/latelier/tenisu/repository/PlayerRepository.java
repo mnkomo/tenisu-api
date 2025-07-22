@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.latelier.tenisu.model.Player;
 
 @Repository
-public interface PlayerRepository extends MongoRepository<Player, Long> {
+public interface PlayerRepository extends MongoRepository<Player, String> {
 
     boolean existsByFirstnameAndLastname(String firstname, String lastname);
 

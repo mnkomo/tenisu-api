@@ -56,9 +56,9 @@ class PlayerServiceTest {
     @Test
     void getPlayersSortedByRankBestToWorst_shouldReturnSortedList() {
         // Given
-        Player player1 = buildPlayer(101, "Raphael", "NADAL", 1);
-        Player player2 = buildPlayer(12, "", "SINNER", 2);
-        Player player3 = buildPlayer(221, "Serena", "WILLIAM", 3);
+        Player player1 = buildPlayer("player101", "Raphael", "NADAL", 1);
+        Player player2 = buildPlayer("player12", "", "SINNER", 2);
+        Player player3 = buildPlayer("player221", "Serena", "WILLIAM", 3);
         when(playerRepository.findAll(any(Sort.class))).thenReturn(List.of(
                 player1, player2, player3));
         ArgumentCaptor<Sort> sortArgumentCaptor = ArgumentCaptor.forClass(Sort.class);
@@ -85,7 +85,7 @@ class PlayerServiceTest {
     @Test
     void getPlayerById_shouldReturnPlayer_whenPlayerExists() {
         // Given
-        long playerId = 1L;
+        String playerId = "player1L";
         Player expectedPlayer = buildPlayer(playerId, "Roger", "FEDERER", 1);
         when(playerRepository.findById(playerId)).thenReturn(Optional.of(expectedPlayer));
 
@@ -103,7 +103,7 @@ class PlayerServiceTest {
     @Test
     void getPlayerById_shouldThrowPlayerNotFoundException_whenPlayerDoesNotExist() {
         // Given
-        long playerId = 999L;
+        String playerId = "player999L";
         when(playerRepository.findById(playerId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -315,7 +315,7 @@ class PlayerServiceTest {
                 .hasMessage("Player with the same firstname and lastname already exists");
     }
 
-    private Player buildPlayer(long id, String firstname, String lastname, int rank) {
+    private Player buildPlayer(String id, String firstname, String lastname, int rank) {
         Player player = new Player();
         player.setId(id);
         player.setFirstname(firstname);

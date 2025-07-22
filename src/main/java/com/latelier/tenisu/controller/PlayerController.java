@@ -31,7 +31,7 @@ public class PlayerController {
      *
      * @return a ResponseEntity containing a list of players sorted by rank.
      */
-    @GetMapping("/sorted-by-rank")
+    @GetMapping()
     public ResponseEntity<List<Player>> getAllPlayersSortedByRank() {
         List<Player> players = playerService.getPlayersSortedByRankBestToWorst();
         if (players.isEmpty()) {
@@ -47,7 +47,7 @@ public class PlayerController {
      * @return a ResponseEntity containing the player with the specified ID.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Player> getPlayerById(@PathVariable long id) {
+    public ResponseEntity<Player> getPlayerById(@PathVariable String id) {
         Player player = playerService.getPlayerById(id);
         return ResponseEntity.ok(player);
     }

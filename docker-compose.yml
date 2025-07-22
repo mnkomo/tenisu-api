@@ -1,17 +1,32 @@
 version: '3.8'
 services:
-  mongodb:
-      image: mongo:latest
-      container_name: dkrcomp-mongodb-container
-      restart: unless-stopped
+    mongodb:
+        image: mongo:latest
+        container_name: dkrcomp-mongodb-container
+        restart: unless-stopped
+        ports:
+            - '27017:27017'
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=tenisu_user
+            - MONGO_INITDB_ROOT_PASSWORD=tenisu_password
+            - MONGO_INITDB_DATABASE=tenisu_db
+        volumes:
+            - mongo_data:/data/db
+    app:
+      build: . # Docker Compose va chercher le Dockerfile dans le répertoire courant
+      container_name: tenisu-app-container
       ports:
-          - '27017:27017'
+          - '9090:9090' # Port de l'application Spring Boot
       environment:
-          - MONGO_INITDB_ROOT_USERNAME=tenisu_user
-          - MONGO_INITDB_ROOT_PASSWORD=tenisu_password
-          - MONGO_INITDB_DATABASE=tenisu_db
-      volumes:
-          - mongo_data:/data/db
+          # Assurez-vous que l'application peut se connecter à MongoDB
+          - SPRING_DATA_MONGODB_HOST=mongodb # 'mongodb' est le nom du service défini dans docker-compose
+          - SPRING_DATA_MONGODB_PORT=27017
+          - SPRING_DATA_MONGODB_DATABASE=tenisu_db
+          - SPRING_DATA_MONGODB_USERNAME=tenisu_user
+          - SPRING_DATA_MONGODB_PASSWORD=tenisu_password
+      depends_on:
+          - mongodb # S'assure que MongoDB démarre avant l'application
+      restart: unless-stopped
 
 volumes:
   mongo_data:

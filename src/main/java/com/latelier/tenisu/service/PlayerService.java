@@ -43,7 +43,7 @@ public class PlayerService {
      * @return Player
      * @throws PlayerNotFoundException si le joueur n'existe pas
      */
-    public Player getPlayerById(long id) {
+    public Player getPlayerById(String id) {
         return playerRepository.findById(id)
                 .orElseThrow(() -> new PlayerNotFoundException("Player not found with id: " + id));
     }

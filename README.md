@@ -109,8 +109,8 @@ Voici les points d'accès de l'API disponibles :
 * **`GET /players/{id}`**
     * Description : Récupère un joueur par son identifiant unique.
     * Paramètres :
-        * `id` (Path Variable) : L'ID du joueur (ex: `17`).
-    * Réponse (Exemple pour `id=17`) : `200 OK`
+        * `id` (Path Variable) : L'ID du joueur (ex: `65b7d1e8c0b9f2a3e4d5c6b7`).
+    * Réponse (Exemple pour `id=65b7d1e8c0b9f2a3e4d5c6b7`) : `200 OK`
         ```json
         {
           "id": "65b7d1e8c0b9f2a3e4d5c6b7",
